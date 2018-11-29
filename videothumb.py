@@ -50,7 +50,7 @@ def handler_http_get(event, context):
         ####ffprobe_cmd.append(qsps['inurl'])
         try:
             out_json = _run(ffprobe_cmd)
-        except subprocess.CalledProcessError as err:
+        except suboprocess.CalledProcessError as err:
             raise RuntimeError('Could not ffprobe inurl=%s err=%s' % (inurl, err))
         out = json.loads(out_json)
         stream = out['streams'][0]
