@@ -24,7 +24,20 @@ So maybe URLs like:
 * ``vthumb?inurl=URL&outurl=PSURL&scale=50``: return simple JSON status
 * ``vthumb?inurl=URL&outurl=PSURL&wxh=640x480``: return simple JSON status
 
+In all cases, inurl and outurl must be encoded so that internal characters like ``&`` don't break the querystring parsing, e.g.:
 
+  from urllib.parse import urlencode
+  urlencode({'urlin':'https://host:80/func&option/file.mp4', 'urlout': 'https://s3/presigned&token=foo.mp4', 'wxh': '640x480'})
+  'urlin=https%3A%2F%2Fhost%3A80%2Ffunc%26option%2Ffile.mp4&urlout=https%3A%2F%2Fs3%2Fpresigned%26token%3Dfoo.mp4&wxh=640x480'
+
+
+Consider breaking up ``ffmpeg`` and ``ffprobe`` into separate lambdas
+for packaging. If each one is large, it may be hard to fit both into a
+single lambda bundle. Creating probe and thumbnail lambdas should make
+individual packages smaller. There's no real point in combining the
+functionality in a single lambda anyway. With both ffmpeg and ffprobe,
+it's too big to deploy the function by itself, we have to do a full
+deploy each time.
 
 
 .. _exodus: https://github.com/intoli/exodus

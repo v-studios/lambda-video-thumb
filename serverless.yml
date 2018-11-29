@@ -1,0 +1,50 @@
+service: videothumb
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: us-east-1
+
+package:
+  individually: true
+  exclude:
+    - ".*/**"
+
+
+# you can add statements to the Lambda function's IAM Role here
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:ListBucket"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
+#            - "/*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+functions:
+  videothumb:
+    handler: videothumb.handler_http_get
+    package:
+      include:
+        - videothumb.py
+        - exodus/**
+    events:
+      - http:
+          path: /
+          method: get
+
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
