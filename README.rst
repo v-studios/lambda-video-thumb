@@ -39,6 +39,10 @@ functionality in a single lambda anyway. With both ffmpeg and ffprobe,
 it's too big to deploy the function by itself, we have to do a full
 deploy each time.
 
+When we split, ``ffmpeg`` lambda won't have access to ``ffprobe``
+binary, so we can't offer ``scale`` option. That's fine, put the work
+on the client.
+
 Maybe we don't have to build the binary; this post shows using the
 static binary as a Lambda layer:
 
