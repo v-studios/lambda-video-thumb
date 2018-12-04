@@ -39,5 +39,10 @@ functionality in a single lambda anyway. With both ffmpeg and ffprobe,
 it's too big to deploy the function by itself, we have to do a full
 deploy each time.
 
+Maybe we don't have to build the binary; this post shows using the
+static binary as a Lambda layer:
+
+https://serverless.com/blog/publish-aws-lambda-layers-serverless-framework
+
 
 .. _exodus: https://github.com/intoli/exodus

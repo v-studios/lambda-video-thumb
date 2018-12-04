@@ -1,0 +1,114 @@
+{
+  "resource": "/",
+  "path": "/",
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "*/*",
+    "CloudFront-Forwarded-Proto": "https",
+    "CloudFront-Is-Desktop-Viewer": "true",
+    "CloudFront-Is-Mobile-Viewer": "false",
+    "CloudFront-Is-SmartTV-Viewer": "false",
+    "CloudFront-Is-Tablet-Viewer": "false",
+    "CloudFront-Viewer-Country": "US",
+    "Host": "s21uq91tf2.execute-api.us-east-1.amazonaws.com",
+    "User-Agent": "curl/7.54.0",
+    "Via": "2.0 7fec31050f9483acb01255d9c8868bfa.cloudfront.net (CloudFront)",
+    "X-Amz-Cf-Id": "3_cd46_O0-CFvlIMPgdwTPz-y2J62ncwq3VgrZxsiOBlZTKhZGbZdg==",
+    "X-Amzn-Trace-Id": "Root=1-5c06da46-38b69880af3f3de057357920",
+    "X-Forwarded-For": "156.68.64.79, 70.132.59.78",
+    "X-Forwarded-Port": "443",
+    "X-Forwarded-Proto": "https"
+  },
+  "multiValueHeaders": {
+    "Accept": [
+      "*/*"
+    ],
+    "CloudFront-Forwarded-Proto": [
+      "https"
+    ],
+    "CloudFront-Is-Desktop-Viewer": [
+      "true"
+    ],
+    "CloudFront-Is-Mobile-Viewer": [
+      "false"
+    ],
+    "CloudFront-Is-SmartTV-Viewer": [
+      "false"
+    ],
+    "CloudFront-Is-Tablet-Viewer": [
+      "false"
+    ],
+    "CloudFront-Viewer-Country": [
+      "US"
+    ],
+    "Host": [
+      "s21uq91tf2.execute-api.us-east-1.amazonaws.com"
+    ],
+    "User-Agent": [
+      "curl/7.54.0"
+    ],
+    "Via": [
+      "2.0 7fec31050f9483acb01255d9c8868bfa.cloudfront.net (CloudFront)"
+    ],
+    "X-Amz-Cf-Id": [
+      "3_cd46_O0-CFvlIMPgdwTPz-y2J62ncwq3VgrZxsiOBlZTKhZGbZdg=="
+    ],
+    "X-Amzn-Trace-Id": [
+      "Root=1-5c06da46-38b69880af3f3de057357920"
+    ],
+    "X-Forwarded-For": [
+      "156.68.64.79, 70.132.59.78"
+    ],
+    "X-Forwarded-Port": [
+      "443"
+    ],
+    "X-Forwarded-Proto": [
+      "https"
+    ]
+  },
+  "queryStringParameters": {
+    "ffprobe": "None",
+    "inurl": "http://images-assets.dev.nasawestprime.com/video/SMALLTOY-WP835/SMALLTOY-WP835~orig.mp4"
+  },
+  "multiValueQueryStringParameters": {
+    "ffprobe": [
+      "None"
+    ],
+    "inurl": [
+      "http://images-assets.dev.nasawestprime.com/video/SMALLTOY-WP835/SMALLTOY-WP835~orig.mp4"
+    ]
+  },
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "resourceId": "vgkrnm42yb",
+    "resourcePath": "/",
+    "httpMethod": "GET",
+    "extendedRequestId": "RZcLBF-RoAMFXXg=",
+    "requestTime": "04/Dec/2018:19:49:26 +0000",
+    "path": "/dev",
+    "accountId": "304932368623",
+    "protocol": "HTTP/1.1",
+    "stage": "dev",
+    "domainPrefix": "s21uq91tf2",
+    "requestTimeEpoch": 1543952966583,
+    "requestId": "b4bc5c8d-f7fd-11e8-878d-8bc1ed9c0166",
+    "identity": {
+      "cognitoIdentityPoolId": null,
+      "accountId": null,
+      "cognitoIdentityId": null,
+      "caller": null,
+      "sourceIp": "156.68.64.79",
+      "accessKey": null,
+      "cognitoAuthenticationType": null,
+      "cognitoAuthenticationProvider": null,
+      "userArn": null,
+      "userAgent": "curl/7.54.0",
+      "user": null
+    },
+    "domainName": "s21uq91tf2.execute-api.us-east-1.amazonaws.com",
+    "apiId": "s21uq91tf2"
+  },
+  "body": null,
+  "isBase64Encoded": false
+}
