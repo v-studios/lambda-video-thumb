@@ -16,15 +16,26 @@ functions:
     package:
       include:
         - videoprobe.py
-        - lib.py
         - bin/ffprobe
+        - lib.py
     events:
       - http:
           path: /videoprobe
           method: get
-
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
+  videoprobe:
+    handler: videothumb.handler_http_get
+    package:
+      include:
+        - videothumb.py
+        - bin/ffmpeg
+        - lib.py
+        - certifi
+        - chardet
+        - idna
+        - requests
+        - urllib3
+    events:
+      - http:
+          path: /videothumb
+          # should be POST? since we're creating a new S3 object?
+          method: get

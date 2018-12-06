@@ -1,85 +1,56 @@
 #!/usr/bin/env python3
 
-import json
 import logging
 import os
-import subprocess as sp
 
-QS = ('inurl', 'outurl', 'wxh', 'scale', 'ffprobe')  # inurl or urlin?
-FFPROBE = ('ffprobe -v quiet -print_format json -show_streams -select_streams v:0'
-           ' -show_entries stream=width,height,duration')
-# FFPROBE = ('ffprobe -show_streams -select_streams v:0'
-#            ' -show_entries stream=width,height,duration')
-# FFPROBE = 'ffprobe -version'
-
-
-def run(cmd_list):
-    """Run the command and return stdout.
-
-    :param list cmd_list: list of str for components of command
-    :returns: string output of the command
-    """
-    # Let it raise exceptions to our caller; most likely couldn't find the URL
-    # Wasn't capturing stderr that I could see
-    # ret = subprocess.check_output(cmd_list, stderr=subprocess.STDOUT)
-    logging.warning('# run: about to Popen cmd_list=%s' % cmd_list)
-    ret = sp.Popen(cmd_list, stdout=sp.PIPE, stderr=sp.PIPE)
-    (stdout, stderr) = ret.communicate()
-    logging.warning('# stdout=%s' % stdout.decode('utf8'))
-    if stderr:
-        loggging.error('# Run got error,  decoding')
-        stderr = stderr.decode('utf8')
-        logging.error('run "%s" failed: %s' % (run_cmd, stderr))
-        raise RuntimeError(stderr)
-    return stdout.decode('utf8')
-
-
-def response(code, body):
-    """Return HTTP response code and JSONified body."""
-    return {'statusCode': 400,
-            'body': json.dumps(body)}
+from lib import run, response
 
 
 def handler_http_get(event, context):
-    # We get our input params from event.input[] like:
-    # "queryStringParameters": {"inurl": "INURL", "outurl": "OUTURL", "wxh": "640x480"}
-    # And they are already URL decoded for us.
-    # FYI: events with s3 key needs:  unquote_plus(record['s3']['object']['key'])
-    logging.warning('# event=%s' % json.dumps(event))
-    # path=/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
     os.environ['PATH'] = 'bin:' + os.environ['PATH']
-    logging.warning('### path=%s', os.environ['PATH'])
     qsps = event['queryStringParameters']
-    for qsp in qsps:
-        if qsp not in QS:
-            return response(400, f'Unknown qsp={qsp} use: {QS}')
-    inurl = qsps['inurl']
-    logging.warning('# inurl=%s' % inurl)
+    try:
+        inurl = qsps['inurl']
+        outurl = qsps['outurl']
+        wxh = qsps['wxh']
+    except KeyError as err:
+        return response(400, {'message': 'Specify inurl, outurl, wxh (%s)' % err})
+    logging.warning('videothumb inurl=%s outurl=%s wxh=%s' % (inurl, outurl, wxh))
 
-    # TODO: this should be a separate handler or separate lambda
-    if 'ffprobe' in qsps:
-        logging.warning('# got ffprobe, building command')
-        ffprobe_cmd = FFPROBE.split()  # don't split the URL, may have embedded spaces
-        ffprobe_cmd.append(qsps['inurl'])
-        try:
-            logging.warning('# calling FFPROBE: %s' % ffprobe_cmd)
-            out_json = run(ffprobe_cmd)
-            logging.warning('# called FFPROBE: %s' % ffprobe_cmd)
-        except RuntimeError as err:
-            logging.error('# FAILED PROCESS FFPROBE: %s' % ffprobe_cmd)
-            return(500, {'message': 'Could not ffprobe inurl=%s err=%s' % (inurl, err)})
-        except subprocess.CalledProcessError as err:
-            logging.error('# FAILED PROCESS FFPROBE: %s' % ffprobe_cmd)
-            return(500, {'message': 'Could not ffprobe inurl=%s err=%s' % (inurl, err)})
-        logging.warning('# Getting out from out_json=%s' % out_json)
-        out = json.loads(out_json)
-        logging.warning('# Getting stream from out=%s' % out)
-        stream = out['streams'][0]
-        logging.warning('# returning...')
-        width = int(float(stream['width']))
-        height = int(float(stream['height']))
-        seconds = float(stream['duration'])
-        return response(200,
-                        {'message': 'probe values',
-                         'urlin': inurl, 'width': width, 'height':  height, 'seconds': seconds})
-    return response(400, {'message': 'not implemented', 'andonemorething': 'foo'})
+    # Construct the command, only adding the optional scaling "-s WxH" if needed
+    # ffmpeg -v quiet -y -ss 3.1416 -i $URL -vframes 1 -s 640x480 thumb.jpg
+    ffmpeg_cmd = ['ffmpeg', '-v', 'quiet', '-y', '-ss', str(seconds), '-i', self.url,
+                  '-vframes', '1', '-s', '%sx%s' % (width, height), '/tmp/out.jpg']
+    t_0 = time()
+    try:
+        run(ffmpeg_cmd)
+    except RuntimeError as err:
+        raise RuntimeError('Could not ffmpeg err=%s' % err)
+    t_grab = time() - t_0
+    self.log.debug('url=%s frame_grab_seconds=%s', inurl, t_grab)
+    # Can give it body (bytes) or filepointer, but must supply size
+    thumb_fp = open('/tmp/out.jpg', 'rb')
+    thumb_len = str(os.path.getsize('/tmp/out.jpg'))
+    t_1 = time()
+    res = requests.put(psurl, data=thumb_fp, headers={'Content-Type': 'image/jpeg', 'Content-Length': thumb_len})
+    t_upload = time() - t_1
+    if res.code != 200:
+        return response(500, {'message': 'could not upload: %s' % res.text})
+    return response(200, {'message': 'time_grab=%s time_upload%s outurl=%s' % (t_grab, t_upload, outurl)})
+
+
+
+def main():
+    from urllib.parse import urlencode
+    inurl = s3.generate_presigned_url('put_object',
+                                      ExpiresIn=600,
+                                      Params={'Bucket': 'cshenton-test-presigned',
+                                              'Key': 'video.mp4'})
+    outurl = s3.generate_presigned_url('put_object',
+                                       ExpiresIn=600,
+                                       Params={'Bucket': 'cshenton-test-presigned',
+                                               'Key': 'thumbout.jpg',
+                                               'ContentType': 'image/jpeg'})
+    secs = 4
+    params = urlencode({'urlin': urlin, 'urlout': outurl, 'wxh': '640x480'})
+    # invoke our lambda with those params
