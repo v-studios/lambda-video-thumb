@@ -12,13 +12,16 @@ def run(cmd_list):
     :returns: string output of the command
     """
     logging.warning('run: cmd_list=%s' % cmd_list)
-    ret = sp.Popen(cmd_list, stdout=sp.PIPE, stderr=sp.PIPE)
+    try:
+        ret = sp.Popen(cmd_list, stdout=sp.PIPE, stderr=sp.PIPE)
+    except Exception as err:
+        raise RuntimeError('run cmd="%s": %s' % (cmd_list, err))
     logging.warning('run: ret=%s' % ret)
     (stdout, stderr) = ret.communicate()
     logging.warning('run: stdout=%s' % stdout)
-    if stderr:
+    if ret.returncode:
         stderr = stderr.decode('utf8')
-        logging.error('run "%s" failed: %s' % (cmd_list, stderr))
+        logging.error('run cmd="%s": %s' % (cmd_list, stderr))
         raise RuntimeError(stderr)
     return stdout.decode('utf8')
 
