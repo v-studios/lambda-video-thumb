@@ -2,55 +2,58 @@
 
 import logging
 import os
+from time import time
+
+import requests
 
 from lib import run, response
 
+THUMB_JPG = '/tmp/thumb.jpg'
+
 
 def handler_http_get(event, context):
-    os.environ['PATH'] = 'bin:' + os.environ['PATH']
-    qsps = event['queryStringParameters']
     try:
+        qsps = event['queryStringParameters']
         inurl = qsps['inurl']
         outurl = qsps['outurl']
+        seconds = qsps['seconds']
         wxh = qsps['wxh']
     except KeyError as err:
-        return response(400, {'message': 'Specify inurl, outurl, wxh (%s)' % err})
-    logging.warning('videothumb inurl=%s outurl=%s wxh=%s' % (inurl, outurl, wxh))
+        return response(400, {'message': 'Specify inurl, outurl, seconds, wxh (%s)' % err})
+    logging.warning('videothumb inurl=%s outurl=%s seconds=%s wxh=%s', inurl, outurl, seconds, wxh)
+    try:
+        res = make_thumb(inurl, outurl, seconds, wxh)
+    except Exception as err:
+        return response(500, {'message': 'Something bad happened: %s' % err})
+    return response(200, {'message': res})
 
-    # Construct the command, only adding the optional scaling "-s WxH" if needed
+
+def make_thumb(inurl, outurl, seconds, wxh):
+    """Make the thumbnail and upload, return status message; raise on error."""
+
     # ffmpeg -v quiet -y -ss 3.1416 -i $URL -vframes 1 -s 640x480 thumb.jpg
-    ffmpeg_cmd = ['ffmpeg', '-v', 'quiet', '-y', '-ss', str(seconds), '-i', self.url,
-                  '-vframes', '1', '-s', '%sx%s' % (width, height), '/tmp/out.jpg']
+    #  '-v', 'quiet',
+    ffmpeg_cmd = ['ffmpeg', '-v', 'warning', '-y', '-ss', seconds, '-i', inurl,
+                  '-vframes', '1', '-s', wxh, THUMB_JPG]
+    logging.warning('videothumb ffmpeg_cmd=%s', ffmpeg_cmd)
     t_0 = time()
     try:
-        run(ffmpeg_cmd)
+        res = run(ffmpeg_cmd)
+        logging.warning('FFMPEG res=%s', res)
     except RuntimeError as err:
         raise RuntimeError('Could not ffmpeg err=%s' % err)
     t_grab = time() - t_0
-    self.log.debug('url=%s frame_grab_seconds=%s', inurl, t_grab)
-    # Can give it body (bytes) or filepointer, but must supply size
-    thumb_fp = open('/tmp/out.jpg', 'rb')
-    thumb_len = str(os.path.getsize('/tmp/out.jpg'))
+    logging.warning('url=%s frame_grab_seconds=%s', inurl, t_grab)
+
+    # Can give it filepointer or body (bytes), but must supply size
+    thumb_fp = open(THUMB_JPG, 'rb')
+    thumb_len = str(os.path.getsize(THUMB_JPG))
     t_1 = time()
-    res = requests.put(psurl, data=thumb_fp, headers={'Content-Type': 'image/jpeg', 'Content-Length': thumb_len})
+    res = requests.put(outurl, data=thumb_fp,
+                       headers={'Content-Type': 'image/jpeg', 'Content-Length': thumb_len})
     t_upload = time() - t_1
-    if res.code != 200:
-        return response(500, {'message': 'could not upload: %s' % res.text})
-    return response(200, {'message': 'time_grab=%s time_upload%s outurl=%s' % (t_grab, t_upload, outurl)})
+    if res.status_code != 200:
+        raise RuntimeError('Could not upload: %s' % res.text)
+    return 'time_grab=%s time_upload=%s outurl=%s' % (t_grab, t_upload, outurl)
 
 
-
-def main():
-    from urllib.parse import urlencode
-    inurl = s3.generate_presigned_url('put_object',
-                                      ExpiresIn=600,
-                                      Params={'Bucket': 'cshenton-test-presigned',
-                                              'Key': 'video.mp4'})
-    outurl = s3.generate_presigned_url('put_object',
-                                       ExpiresIn=600,
-                                       Params={'Bucket': 'cshenton-test-presigned',
-                                               'Key': 'thumbout.jpg',
-                                               'ContentType': 'image/jpeg'})
-    secs = 4
-    params = urlencode({'urlin': urlin, 'urlout': outurl, 'wxh': '640x480'})
-    # invoke our lambda with those params
